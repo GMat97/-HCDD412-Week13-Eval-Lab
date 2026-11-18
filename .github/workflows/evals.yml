@@ -1,8 +1,7 @@
 
 name: evals
 
-on:
-  pull_request:
+on: [pull_request]
 
 jobs:
   evals:
@@ -43,5 +42,6 @@ jobs:
         env:
           PROMPT_VERSION: v2
         run: python evals/run_evals.py --baseline report-v2.json
+
 
 
