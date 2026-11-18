@@ -93,16 +93,34 @@ def summarize(results, prompt_version):
 
 
 def regression_gate(baseline, current):
-    """PART 3 OF THE LAB -- YOU IMPLEMENT THIS.
+    """Compare evaluation results and flag any regressions."""
+    problems = []
 
-    Compare two report dicts (the saved baseline and the current run) and return a list of
-    human-readable problems. Return an empty list when the change is safe to ship.
-    Suggested rules to consider (pick and justify your own):
-      - any case that PASSED in the baseline but FAILS now is a regression
-      - pass rate must not drop
-      - average latency or total tokens must not grow by more than some percentage
-    """
-    return []  # TODO: replace with your gate logic
+    # Find the cases that passed in the original evaluation.
+    baseline_passed = {
+        case["id"] for case in baseline["results"] if case["passed"]
+    }
+
+    # Check how those same cases performed in the latest run.
+    current_results = {
+        case["id"]: case["passed"] for case in current["results"]
+    }
+
+    for case_id in sorted(baseline_passed):
+        if not current_results.get(case_id, False):
+            problems.append(
+                f"Regression: '{case_id}' passed before but now fails or is missing."
+            )
+
+    # Also flag a drop in the overall pass rate.
+    # Latency and token limits are optional, so I'm leaving those out.
+    if current["pass_rate"] < baseline["pass_rate"]:
+        problems.append(
+            f"Pass rate dropped from {baseline['pass_rate']:.0%} "
+            f"to {current['pass_rate']:.0%}."
+        )
+
+    return problems
 
 
 def main():
